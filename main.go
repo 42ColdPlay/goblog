@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var router = mux.NewRouter()
+
 /*
 func handlerFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>hello 这里是 goblog</h1>")
@@ -50,6 +52,7 @@ func main() {
 	http.ListenAndServe(":3000", router)
 }
 */
+
 //http.ServeMux的长度优先匹配适用于静态内容
 //gorilla/mux 的精准匹配适合动态网站
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,6 +84,26 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "创建新的文章")
 }
 
+//创建博文表单
+func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
+	html := `
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<title>创建文章--我的技术博客</title>
+	</head>
+	<body>
+		<form arction="%s" method="post">
+			<p><input type="text" name="title"></p>
+			<p><textarea name="body" cols="30" rows="10"></textarea></p>
+			<p><button type="submit">提交</button></p>
+	</body>
+	</html>
+	`
+	storeURL, _ := router.Get("articles.create").URL()
+	fmt.Fprintf(w, html, storeURL)
+}
+
 //中间件
 func forceHTMLMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +124,7 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 	})
 }
 func main() {
-	router := mux.NewRouter()
+
 	//Name() 方法用来给路由命名
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
@@ -110,6 +133,7 @@ func main() {
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", articlesIndexHandler).Methods("GET").Name("articles.index")
 	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
+	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
 
 	//自定义404页面
 	router.NotFoundHandler = http.HandlerFunc(notFundHandler)
@@ -117,11 +141,5 @@ func main() {
 	//中间件：强制内容类型为HTML
 	router.Use(forceHTMLMiddleware)
 
-	//通过命名路由获取URL示例
-	//传参是路由的名称，接下来我们就可以靠这个名称来获取到 URI
-	homeURL, _ := router.Get("home").URL()
-	fmt.Println("homeURL:", homeURL)
-	articleURL, _ := router.Get("articles.show").URL("id", "3")
-	fmt.Println("articleURL:", articleURL)
 	http.ListenAndServe(":3000", removeTrailingSlash(router))
 }
