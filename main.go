@@ -81,7 +81,22 @@ func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "访问文章列表")
 }
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "创建新的文章")
+	err := r.ParseForm()
+	if err != nil {
+		//解析错误，这里应该有错误处理
+		fmt.Fprint(w, "请提供正确的数据！")
+		return
+	}
+	title := r.PostForm.Get("title")
+	fmt.Fprintf(w, "POST POSTForm:%v <br>", r.PostForm)
+	//r.Form比r.PostForm多了URL参数里的数据
+	fmt.Fprintf(w, "POST Form:%v <br>", r.Form)
+	fmt.Fprintf(w, "title 的值为：%v<br>", title)
+	//不想获取所有的请求内容，逐个获取，无需使用r.ParseForm(),可以直接使用r.FormValue()和r.PostFormValue()方法
+	fmt.Fprintf(w, "r.Form中title的值为：%v<br>", r.FormValue("title"))
+	fmt.Fprintf(w, "r.PostForm中title的值为：%v<br>", r.PostFormValue("title"))
+	fmt.Fprintf(w, "r.Form中test的值为：%v<br>", r.FormValue("test"))
+	fmt.Fprintf(w, "r.PostForm中test的值为：%v<br>", r.PostFormValue("test"))
 }
 
 //创建博文表单
@@ -93,14 +108,14 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 		<title>创建文章--我的技术博客</title>
 	</head>
 	<body>
-		<form arction="%s" method="post">
+		<form action="%s?test=data" method="post">
 			<p><input type="text" name="title"></p>
 			<p><textarea name="body" cols="30" rows="10"></textarea></p>
 			<p><button type="submit">提交</button></p>
 	</body>
 	</html>
 	`
-	storeURL, _ := router.Get("articles.create").URL()
+	storeURL, _ := router.Get("articles.store").URL()
 	fmt.Fprintf(w, html, storeURL)
 }
 
