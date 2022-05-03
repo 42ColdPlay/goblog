@@ -209,9 +209,20 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+func createTables() {
+	createArticlesSQL := `
+	create table if not exists articles(
+		id bigint(20) PRIMARY KEY AUTO_INCREMENT NOT NULL,
+		title varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+		body longtext COLLATE utf8mb4_unicode_ci
+	);`
+	_, err := db.Exec(createArticlesSQL)
+	checkError(err)
+}
 func main() {
 	initDB()
 
+	createTables()
 	//Name() 方法用来给路由命名
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
