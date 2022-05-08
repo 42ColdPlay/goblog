@@ -125,7 +125,7 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 	// vars := mux.Vars(r)
 	// id := vars["id"]
 	// fmt.Fprint(w, "文章ID:"+id)
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	fmt.Fprint(w, "文章ID:"+id)
 	//2.读取对应的文章数据
 	//article := Article{}
@@ -313,11 +313,6 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//代码重构，封装重复的代码
-func getRouteVariable(parameterName string, r *http.Request) string {
-	vars := mux.Vars(r)
-	return vars[parameterName]
-}
 func getArticleById(id string) (Article, error) {
 	article := Article{}
 	query := "SELECT * FROM articles where id = ?"
@@ -328,7 +323,7 @@ func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
 	//1.获取URL参数
 	//vars := mux.Vars(r)
 	//id := vars["id"]
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	//2.读取对应的文章数据
 	// article := Article{}
 	// query := "SELECT * FROM articles WHERE id = ?"
@@ -383,7 +378,7 @@ func validateArticleFormData(title string, body string) map[string]string {
 }
 func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	//1.获取URL参数
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 	//2.读取对应的文章数据
 	_, err := getArticleById(id)
 	//3.如果出现错误
@@ -452,7 +447,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 func articlesDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	//1.获取URL参数
-	id := getRouteVariable("id", r)
+	id := route.GetRouteVariable("id", r)
 
 	//2.读取对应的文章数据
 	article, err := getArticleById(id)
