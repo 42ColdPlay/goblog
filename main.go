@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"goblog/pkg/route"
 	"html/template"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var router = mux.NewRouter()
+var router *mux.Router
 var db *sql.DB
 
 func initDB() {
@@ -155,24 +156,16 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 		//4.读取成功
 		//fmt.Fprint(w, "读取成功，文章标题--"+article.Title)
 		//4.读取成功，显示文章
-		tmpl, err := template.New("show.gohtml").Funcs(template.FuncMap{
-			"RouteName2URL": RouteName2URL,
-			"Int64ToString": Int64ToString,
-		}).ParseFiles("resources/views/articles/show.gohtml")
+		tmpl, err := template.New("show.gohtml").
+			Funcs(template.FuncMap{
+				"RouteName2URL": route.Name2URL,
+				"Int64ToString": Int64ToString,
+			}).
+			ParseFiles("resources/views/articles/show.gohtml")
 		checkError(err)
 		err = tmpl.Execute(w, article)
 		checkError(err)
 	}
-}
-
-//RouteName2URL 通过路由名称来获取URL
-func RouteName2URL(routeName string, pairs ...string) string {
-	url, err := router.Get(routeName).URL(pairs...)
-	if err != nil {
-		checkError(err)
-		return ""
-	}
-	return url.String()
 }
 
 //将int64转换成string
@@ -544,6 +537,8 @@ func main() {
 	initDB()
 
 	createTables()
+	route.Initialize()
+	router = route.Router
 	//Name() 方法用来给路由命名
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
